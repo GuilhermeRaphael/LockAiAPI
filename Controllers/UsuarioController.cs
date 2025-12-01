@@ -14,7 +14,6 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace LockAi.Controllers
 {
-    [Authorize]
     [ApiController]
     [Route("[controller]")]
     public class UsuarioController : ControllerBase
@@ -92,11 +91,20 @@ namespace LockAi.Controllers
         {
             try
             {
-                ValidarUsuario(novoUsuario); //vai usar o metodo de validacao para validar o usuario e o representante
+                var usuarioExistente = await _context.Usuarios
+                    .FirstOrDefaultAsync(u => u.Cpf == novoUsuario.Cpf);
 
+            if (usuarioExistente != null)
+            {
+                return BadRequest("CPF já cadastrado no sistema.");
+            }
+
+                ValidarUsuario(novoUsuario);
+
+                novoUsuario.TipoUsuarioId = 1;
                 novoUsuario.Senha = BCrypt.Net.BCrypt.HashPassword(novoUsuario.Senha);
 
-                _context.Usuarios.Add(novoUsuario); //adiciona no banco
+                _context.Usuarios.Add(novoUsuario);
                 await _context.SaveChangesAsync();
 
                 return CreatedAtAction(nameof(GetUsuarioId), new { id = novoUsuario.Id }, novoUsuario);
@@ -106,6 +114,37 @@ namespace LockAi.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
+        [Authorize(Policy = "Gestor")]
+        [HttpPost("gestor")]
+        public async Task<IActionResult> AddGestor([FromBody] Usuario novoUsuario)
+        {
+            try
+            {
+                var usuarioExistente = await _context.Usuarios
+                    .FirstOrDefaultAsync(u => u.Cpf == novoUsuario.Cpf);
+
+                if (usuarioExistente != null)
+                {
+                return BadRequest("CPF já cadastrado no sistema.");
+                }
+
+                ValidarUsuario(novoUsuario);
+
+                novoUsuario.TipoUsuarioId = 2;
+                novoUsuario.Senha = BCrypt.Net.BCrypt.HashPassword(novoUsuario.Senha);
+
+                _context.Usuarios.Add(novoUsuario);
+                await _context.SaveChangesAsync();
+
+                return CreatedAtAction(nameof(GetUsuarioId), new { id = novoUsuario.Id }, novoUsuario);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> ExcluirUsuario(int id)
