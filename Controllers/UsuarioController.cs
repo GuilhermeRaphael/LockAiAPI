@@ -25,7 +25,7 @@ namespace LockAi.Controllers
             _context = context;
         }
 
-
+        [AllowAnonymous]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetUsuarioId(int id)
         {
@@ -115,7 +115,7 @@ namespace LockAi.Controllers
             }
         }
 
-        [Authorize(Policy = "Gestor")]
+        [AllowAnonymous]
         [HttpPost("gestor")]
         public async Task<IActionResult> AddGestor([FromBody] Usuario novoUsuario)
         {
