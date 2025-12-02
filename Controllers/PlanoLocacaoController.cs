@@ -32,9 +32,9 @@ namespace LockAi.Controllers
             try
             {
                 var plano = await _context.PlanosLocacao
-                    .Include(t => t.UsuarioInclusao)
+                   /* .Include(t => t.UsuarioInclusao)
                     .Include(t => t.UsuarioAtualizacao)
-                    .Include(t => t.PlanoLocacaoObjetos)
+                    .Include(t => t.PlanoLocacaoObjetos)*/
                     .FirstOrDefaultAsync(r => r.Id == id);
 
                 if (plano == null)
@@ -65,9 +65,9 @@ namespace LockAi.Controllers
             try
             {
                 var lista = await _context.PlanosLocacao
-                        .Include(t => t.UsuarioInclusao)
+                        /*.Include(t => t.UsuarioInclusao)
                         .Include(t => t.UsuarioAtualizacao)
-                        .Include(t => t.PlanoLocacaoObjetos)
+                        .Include(t => t.PlanoLocacaoObjetos)*/
                         .ToListAsync();
 
                 foreach (var plano in lista)
