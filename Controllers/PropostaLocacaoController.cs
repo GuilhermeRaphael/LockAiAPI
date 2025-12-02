@@ -108,6 +108,33 @@ namespace LockAi.Controllers
             }
         }
 
+        [HttpGet("analise")]
+        public async Task<IActionResult> GetPropostaEmAnalise()
+        {
+            try
+            {
+                var situacaoDesejada = SituacaoPropostaEnum.EmAnalise;
+
+                var listaEmAnalise = await _context.PropostaLocacao
+                    .Include(p => p.Usuario)
+                    .Include(p => p.PlanoLocacao)
+                    .Include(p => p.Objeto)
+                    .Where(p => p.Situacao == situacaoDesejada)
+                    .ToListAsync();
+
+                if (!listaEmAnalise.Any())
+                {
+                    return NotFound("Nenhuma proposta de locação encontrada com essa situação");
+                }
+
+                return Ok(listaEmAnalise);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Erro ao obter propostas em análise: {ex.Message}");
+            }
+        }
+
 
 
         [HttpPatch("{id}/cancelar")]
