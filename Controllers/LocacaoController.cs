@@ -77,7 +77,14 @@ namespace LockAi.Controllers
         
         private async Task<Usuario> GetUsuarioLogadoAsync()
         {
-            return await _context.Usuarios.FindAsync(1); // ID fixo por enquanto, mudar com a implementação do JWT
+            var userIdClaim =  User.FindFirst(ClaimTypes.NameIdentifier);
+
+            if (userIdClaim == null)
+                return null;
+
+            int userId = int.Parse(userIdClaim.Value);
+
+            return await _context.Usuarios.FirstOrDefaultAsync(u => u.Id == userId);
         }   
 
           [HttpGet("GetLocacaoAtivaPorUsuario")]
