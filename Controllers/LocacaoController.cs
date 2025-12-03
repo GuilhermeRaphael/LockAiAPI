@@ -105,12 +105,13 @@ namespace LockAi.Controllers
 
                     // PASSO 2: Buscar a locação ATIVA (Aprovada ou Em Andamento)
                     var locacaoAtiva = await _context.Locacoes
-                        .Include(l => l.PlanoLocacao) // Inclui o PlanoLocacao para o frontend exibir o nome
-                        .FirstOrDefaultAsync(l => 
-                            l.IdUsuario == usuario.Id && 
-                            (l.Situacao == SituacaoLocacaoEnum.Ativa) &&
-                            l.DataFim == null // Garante que não foi encerrada
+                        .Include(l => l.PropostaLocacao)
+                            .ThenInclude(p => p.PlanoLocacao)
+                        .FirstOrDefaultAsync(l =>
+                            l.IdUsuario == usuario.Id &&
+                            l.Situacao == SituacaoLocacaoEnum.Ativa
                         );
+
 
                     if (locacaoAtiva == null)
                     {

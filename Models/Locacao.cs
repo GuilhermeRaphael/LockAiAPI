@@ -20,7 +20,6 @@ namespace LockAi.Models
         public SituacaoLocacaoEnum Situacao { get; set; }
         public DateTime DataSituacao { get; set; }
         public int IdUsuarioSituacao { get; set; }
-        public PlanoLocacao PlanoLocacao { get; set; }
         // 1:1
         [JsonIgnore]
         public LocacaoParceiro? LocacaoParceiro { get; set; }
