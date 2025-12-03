@@ -7,6 +7,7 @@ using LockAi.Models;
 using LockAi.Models.Enuns;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims; 
 
 namespace LockAi.Controllers
 {
@@ -77,8 +78,47 @@ namespace LockAi.Controllers
         private async Task<Usuario> GetUsuarioLogadoAsync()
         {
             return await _context.Usuarios.FindAsync(1); // ID fixo por enquanto, mudar com a implementação do JWT
-        }
+        }   
 
+          [HttpGet("GetLocacaoAtivaPorUsuario")]
+            public async Task<IActionResult> GetLocacaoAtivaPorUsuario()
+            {
+                try
+                {
+                    // ⚠️ PASSO 1: Obter o ID do Usuário Logado de forma segura
+                    var usuario = await GetUsuarioLogadoAsync(); // Método temporário (ID=1)
+                    // Se o JWT estivesse funcionando, seria algo como:
+                    // var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+
+                    if (usuario == null)
+                    {
+                        // Se o ID do usuário não for encontrado no token ou no mock.
+                        return Unauthorized("Usuário não autenticado ou ID de usuário inválido.");
+                    }
+
+                    // PASSO 2: Buscar a locação ATIVA (Aprovada ou Em Andamento)
+                    var locacaoAtiva = await _context.Locacoes
+                        .Include(l => l.PlanoLocacao) // Inclui o PlanoLocacao para o frontend exibir o nome
+                        .FirstOrDefaultAsync(l => 
+                            l.IdUsuario == usuario.Id && 
+                            (l.Situacao == SituacaoLocacaoEnum.Ativa) &&
+                            l.DataFim == null // Garante que não foi encerrada
+                        );
+
+                    if (locacaoAtiva == null)
+                    {
+                        // Retorna 404 para indicar que não há conteúdo ativo, conforme o frontend espera
+                        return NotFound("Nenhuma locação ativa encontrada para este usuário."); 
+                    }
+
+                    // PASSO 3: Retorna a locação
+                    return Ok(locacaoAtiva);
+                }
+                catch (System.Exception ex)
+                {
+                    return BadRequest($"Erro ao buscar locação ativa. {ex.Message}");
+                }
+            }
 
     }
 }
