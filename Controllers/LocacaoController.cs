@@ -8,6 +8,7 @@ using LockAi.Models.Enuns;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims; 
+using LockAi.Dtos;
 
 namespace LockAi.Controllers
 {
@@ -87,46 +88,59 @@ namespace LockAi.Controllers
             return await _context.Usuarios.FirstOrDefaultAsync(u => u.Id == userId);
         }   
 
-          [HttpGet("GetLocacaoAtivaPorUsuario")]
-            public async Task<IActionResult> GetLocacaoAtivaPorUsuario()
+        [HttpGet("GetLocacaoAtivaPorUsuario")]
+        public async Task<IActionResult> GetLocacaoAtivaPorUsuario()
+        {
+            try
             {
-                try
+                var usuario = await GetUsuarioLogadoAsync();
+
+                if (usuario == null)
+                    return Unauthorized("Usuário não autenticado.");
+
+                var locacaoAtiva = await _context.Locacoes
+                    .Include(l => l.PropostaLocacao)
+                        .ThenInclude(p => p.PlanoLocacao)
+                    .Include(l => l.PropostaLocacao)
+                        .ThenInclude(p => p.Objeto)
+                    .FirstOrDefaultAsync(l =>
+                        l.IdUsuario == usuario.Id &&
+                        l.Situacao == SituacaoLocacaoEnum.Ativa
+                    );
+
+                if (locacaoAtiva == null)
+                    return NotFound("Nenhuma locação ativa encontrada para este usuário.");
+
+                // MAPEAMENTO PARA DTO
+                var dto = new ConsultarLocacaoAtivaDto
                 {
-                    // ⚠️ PASSO 1: Obter o ID do Usuário Logado de forma segura
-                    var usuario = await GetUsuarioLogadoAsync(); // Método temporário (ID=1)
-                    // Se o JWT estivesse funcionando, seria algo como:
-                    // var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
-
-                    if (usuario == null)
+                    Id = locacaoAtiva.Id,
+                    Valor = locacaoAtiva.Valor,
+                    Situacao = locacaoAtiva.Situacao.ToString(),
+                    PropostaLocacao = new PropostaLocacaoDto
                     {
-                        // Se o ID do usuário não for encontrado no token ou no mock.
-                        return Unauthorized("Usuário não autenticado ou ID de usuário inválido.");
+                        Id = locacaoAtiva.PropostaLocacao.Id,
+                        PlanoLocacao = new PlanoLocacaoDto
+                        {
+                            Id = locacaoAtiva.PropostaLocacao.PlanoLocacao.Id,
+                            Nome = locacaoAtiva.PropostaLocacao.PlanoLocacao.Nome
+                        },
+                        Objeto = new ObjetoDto
+                        {
+                            Id = locacaoAtiva.PropostaLocacao.Objeto.Id,
+                            Nome = locacaoAtiva.PropostaLocacao.Objeto.Nome
+                        }
                     }
+                };
 
-                    // PASSO 2: Buscar a locação ATIVA (Aprovada ou Em Andamento)
-                    var locacaoAtiva = await _context.Locacoes
-                        .Include(l => l.PropostaLocacao)
-                            .ThenInclude(p => p.PlanoLocacao)
-                        .FirstOrDefaultAsync(l =>
-                            l.IdUsuario == usuario.Id &&
-                            l.Situacao == SituacaoLocacaoEnum.Ativa
-                        );
-
-
-                    if (locacaoAtiva == null)
-                    {
-                        // Retorna 404 para indicar que não há conteúdo ativo, conforme o frontend espera
-                        return NotFound("Nenhuma locação ativa encontrada para este usuário."); 
-                    }
-
-                    // PASSO 3: Retorna a locação
-                    return Ok(locacaoAtiva);
-                }
-                catch (System.Exception ex)
-                {
-                    return BadRequest($"Erro ao buscar locação ativa. {ex.Message}");
-                }
+                return Ok(dto);
             }
+            catch (Exception ex)
+            {
+                return BadRequest($"Erro ao buscar locação ativa. {ex.Message}");
+            }
+        }
+
 
     }
 }
