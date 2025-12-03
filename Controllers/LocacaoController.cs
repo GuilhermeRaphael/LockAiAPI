@@ -117,6 +117,8 @@ namespace LockAi.Controllers
                     Id = locacaoAtiva.Id,
                     Valor = locacaoAtiva.Valor,
                     Situacao = locacaoAtiva.Situacao.ToString(),
+                    DataInicio = locacaoAtiva.DataInicio,
+                    DataFim = locacaoAtiva.DataFim,
                     PropostaLocacao = new PropostaLocacaoDto
                     {
                         Id = locacaoAtiva.PropostaLocacao.Id,
