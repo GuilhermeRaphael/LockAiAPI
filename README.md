@@ -1,6 +1,6 @@
 ﻿# LockAi
 
-API em desenvolvimento para o sistema de locação inteligente de armários escolares e objetos.
+API para o sistema de locação inteligente de armários escolares e objetos.
 
 ## 🔧 Tecnologias
 - ASP.NET Core
@@ -10,7 +10,7 @@ API em desenvolvimento para o sistema de locação inteligente de armários esco
 - RESTful API
 
 ## 🚧 Status
-Este projeto está em fase final de desenvolvimento (TCC).
+Este foi concluido e entregue (TCC).
 
 ## 📁 Estrutura planejada
 - Controle de usuários (usuário comum e gestor)
@@ -19,6 +19,4 @@ Este projeto está em fase final de desenvolvimento (TCC).
 - Upload de imagens
 - Enum para controle de status (locação, proposta etc.)
 
-## 📌 Observações
-Este repositório está em construção e será atualizado continuamente durante o andamento do TCC.
 
